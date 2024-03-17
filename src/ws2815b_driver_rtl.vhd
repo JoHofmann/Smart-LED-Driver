@@ -24,7 +24,30 @@ architecture rtl of ws2815b_driver is
 	
     -- configuration
     constant CLOCK_FREQ : natural := 12_000_000;    -- system clock
-	constant N : integer := 3*3;		--> N = number of bytes e.g. N = LED_count*3
+	constant N : integer := 24*3;		--> N = number of bytes e.g. N = LED_count*3
+
+	-- spi_slave x memwriteinterface
+	signal spi_data_valid : std_ulogic;
+	signal spi_data : std_ulogic_vector(7 downto 0);
+
+	-- memwriteinterface x memreadinterface
+	signal new_frame : std_ulogic;
+
+	-- memreadinterface x pwmgen
+	signal pwm_data       : std_ulogic_vector(7 downto 0);
+	signal pwm_data_valid : std_ulogic;
+	signal pwm_done, pwm_en : std_ulogic;
+
+	-- pwmgen
+	signal pwm : std_ulogic;
+
+	-- memory
+	signal mem_wd, mem_rd : std_ulogic_vector(7 downto 0);
+	signal mem_wa, mem_ra : std_ulogic_vector(12 downto 0);
+	signal mem_we         : std_ulogic;
+
+	-- status
+	signal idle : std_ulogic;
 
 	component pwmgen
 	generic(
@@ -53,7 +76,7 @@ architecture rtl of ws2815b_driver is
 		en_pwm_o   	: out std_ulogic;
 		idle_o 	   	: out std_ulogic;
 		new_frame_i : in  std_ulogic);
-  	end component memreadinterface;
+  	end component;
   
 	component mem
     port ( 
@@ -63,7 +86,7 @@ architecture rtl of ws2815b_driver is
 		we_i    : in  std_ulogic;                       -- Write Enable
 		rd_o    : out std_ulogic_vector(7 downto 0);    -- Read Data
 		ra_i    : in  std_ulogic_vector(12 downto 0));  -- Read Address 
-  	end component mem;
+  	end component;
  
 	component memwriteinterface
 	generic(
@@ -89,29 +112,6 @@ architecture rtl of ws2815b_driver is
 		dv_o       : out std_ulogic;
 		d_o        : out std_ulogic_vector(7 downto 0));
 	end component;
-  	
-	-- spi_slave x memwriteinterface
-	signal spi_data_valid : std_ulogic;
-	signal spi_data : std_ulogic_vector(7 downto 0);
-
-	-- memwriteinterface x memreadinterface
-	signal new_frame : std_ulogic;
-
-	-- memreadinterface x pwmgen
-	signal pwm_data       : std_ulogic_vector(7 downto 0);
-	signal pwm_data_valid : std_ulogic;
-	signal pwm_done, pwm_en : std_ulogic;
-
-	-- pwmgen
-	signal pwm : std_ulogic;
-
-	-- memory
-	signal mem_wd, mem_rd : std_ulogic_vector(7 downto 0);
-  	signal mem_wa, mem_ra : std_ulogic_vector(12 downto 0);
-  	signal mem_we         : std_ulogic;
-
-	-- status
-	signal idle : std_ulogic;
 
 begin
 
@@ -119,7 +119,7 @@ begin
 	LA_1 <= RESET_N;
 	LA_2 <= pwm;
 	LA_3 <= SPI_CLK_IN;
-	LA_4 <= SPI_MOSI_IN;
+	LA_4 <= pwm;
 	LA_5 <= SPI_CS_IN;
 	LA_6 <= idle;
 
