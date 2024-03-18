@@ -4,6 +4,8 @@ use ieee.numeric_std.all;
 
 entity memreadinterface is
 generic ( 
+	CLOCK_FREQ : natural;
+	RESET_TIME : natural;
     N : integer); 
 port ( 
 	clk_i      	: in  std_ulogic;
@@ -15,17 +17,14 @@ port (
 	d_o        	: out std_ulogic_vector(7 downto 0);
 	en_pwm_o   	: out std_ulogic;
 	idle_o 	   	: out std_ulogic;
-	new_frame_i : in  std_ulogic);
-    
+	new_frame_i : in  std_ulogic);    
 end entity memreadinterface;
 
 
 architecture rtl of memreadinterface is
   
   -- constants
---  constant t_reset : integer := 14000; -- Reset time -> 280 us
-
-  constant t_reset : integer := 2500-1; -- Reset time -> >50 us
+  constant t_reset : integer := CLOCK_FREQ/1_000_000*RESET_TIME/1000-1; -- Reset time -> >50 us
   
   -- type declaration
   type state_t is (IDLE, FETCH, DELIVER, STREAM, RESET);

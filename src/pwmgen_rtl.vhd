@@ -4,7 +4,10 @@ use ieee.numeric_std.all;
 
 entity pwmgen is
 generic (
-	CLOCK_FREQ	: natural);
+	CLOCK_FREQ	: natural;
+	HIGH_TIME	: natural;
+	LOW_TIME	: natural;
+	TOTAL_TIME	: natural);
 port ( 
 	clk_i    : in  std_ulogic;
     rst_n    : in  std_ulogic;
@@ -17,22 +20,10 @@ end entity;
 
 architecture rtl of pwmgen is
 
-	-- 
-  
   -- timings	(timing for reset time in memreadinterface)
---  constant t_low   : integer := 14;    -- -> 300 ns
---  constant t_high  : integer := 49;    -- -> 600 ns
---  constant t_total : integer := 64;    -- -> 1300 ns
-  
-  -- f_clk = 12MHz
-  -- TODO calculate timings
---  constant t_low   : integer := 17-1;    -- -> ~350 ns
---  constant t_high  : integer := 34-1;    -- -> ~700 ns
---  constant t_total : integer := 60-1;    -- -> 1250 ns
-
-  constant t_low   : integer := CLOCK_FREQ/1_000_000*300/1000-1;    -- -> ~350 ns
-  constant t_high  : integer := CLOCK_FREQ/1_000_000*1000/1000-1;    -- -> ~700 ns
-  constant t_total : integer := CLOCK_FREQ/1_000_000*1250/1000-1;    -- -> 1250 ns
+  constant t_low   : integer := CLOCK_FREQ/1_000_000*LOW_TIME/1000-1;    -- -> ~350 ns
+  constant t_high  : integer := CLOCK_FREQ/1_000_000*HIGH_TIME/1000-1;    -- -> ~700 ns
+  constant t_total : integer := CLOCK_FREQ/1_000_000*TOTAL_TIME/1000-1;    -- -> 1250 ns
 
   -- type declaration
   type state_t is (IDLE, OUTPUT, BIT_COMPLETED, REQUEST, RESET);

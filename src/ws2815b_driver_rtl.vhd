@@ -24,7 +24,11 @@ architecture rtl of ws2815b_driver is
 	
     -- configuration
     constant CLOCK_FREQ : natural := 12_000_000;    -- system clock
-	constant N : integer := 24*3;		--> N = number of bytes e.g. N = LED_count*3
+	constant LOW_TIME   : natural := 300;	 -- ns
+	constant HIGH_TIME  : natural := 1_000;	 -- ns
+	constant TOTAL_TIME : natural := 12_500; -- ns
+	constant RESET_TIME : natural := 280_000; -- ns
+	constant N : integer := 24*3;		--> N = number of bytes => N = LED_count*3
 
 	-- spi_slave x memwriteinterface
 	signal spi_data_valid : std_ulogic;
@@ -51,7 +55,10 @@ architecture rtl of ws2815b_driver is
 
 	component pwmgen
 	generic(
-		CLOCK_FREQ : natural);
+		CLOCK_FREQ	: natural;
+		HIGH_TIME	: natural;
+		LOW_TIME	: natural;
+		TOTAL_TIME	: natural);
   	port ( 
 		clk_i    : in  std_ulogic;
 		rst_n    : in  std_ulogic;
@@ -64,6 +71,8 @@ architecture rtl of ws2815b_driver is
   
 	component memreadinterface
  	generic(
+		CLOCK_FREQ : natural;
+		RESET_TIME : natural;
     	N : integer);
   	port ( 
 		clk_i      	: in  std_ulogic;
@@ -128,10 +137,12 @@ begin
 	SERIAL_OUT 	 	<= pwm;
 	INTERRUPT_OUT 	<= idle;
 	
-  
 	pwmgen_i0 : pwmgen
 	generic map(
-		CLOCK_FREQ => CLOCK_FREQ)
+		CLOCK_FREQ	=> CLOCK_FREQ,
+		HIGH_TIME	=> HIGH_TIME,
+		LOW_TIME	=> LOW_TIME,
+		TOTAL_TIME	=> TOTAL_TIME)
 	port map (
 		clk_i 		=> CLOCK_50,
 		rst_n 		=> RESET_N,
@@ -143,6 +154,8 @@ begin
 	
 	memreadinterface_i0 : memreadinterface
 	generic map ( 
+		CLOCK_FREQ => CLOCK_FREQ,
+		RESET_TIME => RESET_TIME,
 		N => N)
 	port map (
 		clk_i      	=> CLOCK_50,
