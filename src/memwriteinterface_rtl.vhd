@@ -4,7 +4,7 @@ use ieee.numeric_std.all;
 
 entity memwriteinterface is
 generic ( 
-	N : integer); 
+	N : natural); 
 port ( 
 	clk_i       : in  std_ulogic;
 	rst_n       : in  std_ulogic;
@@ -18,7 +18,7 @@ end entity;
 
 architecture rtl of memwriteinterface is
   
-	signal index : unsigned(12 downto 0);
+	signal index : integer range 0 to N;
 	signal en_icnt : std_ulogic;
 	
 	signal new_data : std_ulogic;
@@ -39,7 +39,7 @@ begin
 	new_frame_o <= '1' when index = N-1 and s_dv = '1' else '0';
 
 	mem_d_o  <= d_i when rising_edge(clk_i) and s_dv = '1';
-    mem_a_o  <= std_ulogic_vector(index);
+    mem_a_o  <= std_ulogic_vector(to_unsigned(index, mem_a_o'length));
 	mem_we_o <= en_icnt;
   
 	en_icnt <= s_dv when rising_edge(clk_i);
@@ -47,10 +47,10 @@ begin
 	index_counter_p : process(clk_i, rst_n)
 	begin
 		if (rst_n = '0') then
-			 index <= (others => '0');
+			 index <= 0;
 		elsif (rising_edge(clk_i) and en_icnt = '1') then
 			if (index = N-1) then
-				index <= (others => '0');
+				index <= 0;
 			else
 				index <= index + 1;
 			end if;

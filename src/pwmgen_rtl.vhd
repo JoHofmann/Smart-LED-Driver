@@ -21,9 +21,9 @@ end entity;
 architecture rtl of pwmgen is
 
   -- timings	(timing for reset time in memreadinterface)
-  constant t_low   : integer := CLOCK_FREQ/1_000_000*LOW_TIME/1000-1;    -- -> ~350 ns
-  constant t_high  : integer := CLOCK_FREQ/1_000_000*HIGH_TIME/1000-1;    -- -> ~700 ns
-  constant t_total : integer := CLOCK_FREQ/1_000_000*TOTAL_TIME/1000-1;    -- -> 1250 ns
+  constant t_low   : integer := CLOCK_FREQ/1_000_000*LOW_TIME/1000-1;
+  constant t_high  : integer := CLOCK_FREQ/1_000_000*HIGH_TIME/1000-1;
+  constant t_total : integer := CLOCK_FREQ/1_000_000*TOTAL_TIME/1000-1;
 
   -- type declaration
   type state_t is (IDLE, OUTPUT, BIT_COMPLETED, REQUEST, RESET);

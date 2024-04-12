@@ -24,11 +24,11 @@ architecture rtl of ws2815b_driver is
 	
     -- configuration
     constant CLOCK_FREQ : natural := 12_000_000;    -- system clock
-	constant LOW_TIME   : natural := 300;	 -- ns
-	constant HIGH_TIME  : natural := 1_000;	 -- ns
-	constant TOTAL_TIME : natural := 12_500; -- ns
+	constant LOW_TIME   : natural := 350;	 -- ns
+	constant HIGH_TIME  : natural := 700;	 -- ns
+	constant TOTAL_TIME : natural := 1_250;  -- ns
 	constant RESET_TIME : natural := 280_000; -- ns
-	constant N : integer := 24*3;		--> N = number of bytes => N = LED_count*3
+	constant N : natural := 3*3;		--> N = number of bytes => N = LED_count*3
 
 	-- spi_slave x memwriteinterface
 	signal spi_data_valid : std_ulogic;
@@ -73,7 +73,7 @@ architecture rtl of ws2815b_driver is
  	generic(
 		CLOCK_FREQ : natural;
 		RESET_TIME : natural;
-    	N : integer);
+    	N : natural);
   	port ( 
 		clk_i      	: in  std_ulogic;
 		rst_n      	: in  std_ulogic;
@@ -99,7 +99,7 @@ architecture rtl of ws2815b_driver is
  
 	component memwriteinterface
 	generic(
-		N : integer);
+		N : natural);
 	port ( 
 		clk_i      : in  std_ulogic;
 		rst_n      : in  std_ulogic;

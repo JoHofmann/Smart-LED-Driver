@@ -6,7 +6,7 @@ entity memreadinterface is
 generic ( 
 	CLOCK_FREQ : natural;
 	RESET_TIME : natural;
-    N : integer); 
+    N : natural); 
 port ( 
 	clk_i      	: in  std_ulogic;
 	rst_n      	: in  std_ulogic;
