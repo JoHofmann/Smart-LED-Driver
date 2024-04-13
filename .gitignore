@@ -6,3 +6,4 @@
 *.vcd
 *.autosave.xopp
 log.txt
+.vscode/
