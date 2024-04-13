@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity memwriteinterface is
   generic
   (
-    N : integer);
+    N : natural);
   port
   (
     clk_i       : in  std_ulogic;

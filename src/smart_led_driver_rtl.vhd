@@ -78,7 +78,7 @@ architecture rtl of smart_led_driver is
     (
       CLOCK_FREQ : natural;
       RESET_TIME : natural;
-      N          : integer);
+      N          : natural);
     port
     (
       clk_i       : in  std_ulogic;
@@ -107,7 +107,7 @@ architecture rtl of smart_led_driver is
   component memwriteinterface
     generic
     (
-      N : integer);
+      N : natural);
     port
     (
       clk_i       : in  std_ulogic;
