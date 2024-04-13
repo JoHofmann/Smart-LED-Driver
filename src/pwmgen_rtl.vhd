@@ -1,152 +1,154 @@
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-ENTITY pwmgen IS
-GENERIC (
-CLOCK_FREQ : NATURAL;
-HIGH_TIME : NATURAL;
-LOW_TIME : NATURAL;
-TOTAL_TIME : NATURAL);
-PORT (
-clk_i : IN STD_ULOGIC;
-rst_n : IN STD_ULOGIC;
-d_i : IN STD_ULOGIC_VECTOR(7 DOWNTO 0);
-dv_i : IN STD_ULOGIC;
-en_i : IN STD_ULOGIC;
-pwm_o : OUT STD_ULOGIC;
-done_o : OUT STD_ULOGIC);
-END ENTITY;
+entity pwmgen is
+  generic
+  (
+    CLOCK_FREQ : natural;
+    HIGH_TIME  : natural;
+    LOW_TIME   : natural;
+    TOTAL_TIME : natural);
+  port
+  (
+    clk_i  : in  std_ulogic;
+    rst_n  : in  std_ulogic;
+    d_i    : in  std_ulogic_vector(7 downto 0);
+    dv_i   : in  std_ulogic;
+    en_i   : in  std_ulogic;
+    pwm_o  : out std_ulogic;
+    done_o : out std_ulogic);
+end entity;
 
-ARCHITECTURE rtl OF pwmgen IS
+architecture rtl of pwmgen is
 
--- timings	(timing for reset time in memreadinterface)
-CONSTANT t_low : NATURAL := CLOCK_FREQ/1_000_000 * LOW_TIME/1000 - 1;
-CONSTANT t_high : NATURAL := CLOCK_FREQ/1_000_000 * HIGH_TIME/1000 - 1;
-CONSTANT t_total : NATURAL := CLOCK_FREQ/1_000_000 * TOTAL_TIME/1000 - 1;
+  -- timings	(timing for reset time in memreadinterface)
+  constant t_low   : natural := CLOCK_FREQ/1_000_000 * LOW_TIME/1000 - 1;
+  constant t_high  : natural := CLOCK_FREQ/1_000_000 * HIGH_TIME/1000 - 1;
+  constant t_total : natural := CLOCK_FREQ/1_000_000 * TOTAL_TIME/1000 - 1;
 
--- type declaration
-TYPE state_t IS (IDLE, OUTPUT, BIT_COMPLETED, REQUEST, RESET);
+  -- type declaration
+  type state_t is (IDLE, OUTPUT, BIT_COMPLETED, REQUEST, RESET);
 
--- signal state machine
-SIGNAL cstate, nstate : state_t;
+  -- signal state machine
+  signal cstate, nstate       : state_t;
 
--- data buffer
-SIGNAL data : STD_ULOGIC_VECTOR(7 DOWNTO 0);
+  -- data buffer
+  signal data                 : std_ulogic_vector(7 downto 0);
 
-SIGNAL sel_bit : STD_ULOGIC;
+  signal sel_bit              : std_ulogic;
 
--- counter
-SIGNAL index : unsigned(2 DOWNTO 0);
-SIGNAL timer : unsigned(6 DOWNTO 0);
+  -- counter
+  signal index                : unsigned(2 downto 0);
+  signal timer                : unsigned(6 downto 0);
 
--- control singals
-SIGNAL en_tcnt, en_icnt, t : STD_ULOGIC;
+  -- control singals
+  signal en_tcnt, en_icnt, t  : std_ulogic;
 
-SIGNAL timer_done, done_bit : STD_ULOGIC;
+  signal timer_done, done_bit : std_ulogic;
 
-BEGIN
+begin
 
--- select bit
-sel_bit <= data(to_integer(index));
+  -- select bit
+  sel_bit                                  <= data(to_integer(index));
 
-pwm_o <= '0' WHEN en_i = '0' ELSE
-         '1' WHEN (sel_bit = '1' AND timer <= t_high) OR
-         (sel_bit = '0' AND timer <= t_low) ELSE
-         '0';
+  pwm_o                                    <= '0' when en_i = '0' else
+           '1' when (sel_bit = '1' and timer <= t_high) or
+           (sel_bit = '0' and timer          <= t_low) else
+           '0';
 
--- load data if valid
-load_data_p : PROCESS (clk_i)
-BEGIN
-IF (rising_edge(clk_i) AND dv_i = '1') THEN
-data <= d_i;
-END IF;
-END PROCESS;
+  -- load data if valid
+  load_data_p : process (clk_i)
+  begin
+    if (rising_edge(clk_i) and dv_i = '1') then
+      data <= d_i;
+    end if;
+  end process;
 
--- Index counter: mod 8 counter with en singal
-index_counter_p : PROCESS (clk_i, rst_n)
-BEGIN
-IF (rst_n = '0') THEN
-index <= (OTHERS => '0');
+  -- Index counter: mod 8 counter with en singal
+  index_counter_p : process (clk_i, rst_n)
+  begin
+    if (rst_n = '0') then
+      index <= (others => '0');
 
-ELSIF (rising_edge(clk_i) AND en_icnt = '1') THEN
-IF (index = 7) THEN
-index <= (OTHERS => '0');
-ELSE
-index <= index + 1;
-END IF;
-END IF;
-END PROCESS;
+    elsif (rising_edge(clk_i) and en_icnt = '1') then
+      if (index = 7) then
+        index <= (others => '0');
+      else
+        index <= index + 1;
+      end if;
+    end if;
+  end process;
 
--- Timer counter
-timer_counter_p : PROCESS (clk_i, rst_n)
-BEGIN
-IF (rst_n = '0') THEN
-timer <= (OTHERS => '0');
-timer_done <= '0';
+  -- Timer counter
+  timer_counter_p : process (clk_i, rst_n)
+  begin
+    if (rst_n = '0') then
+      timer      <= (others => '0');
+      timer_done <= '0';
 
-ELSIF (rising_edge(clk_i) AND en_tcnt = '1') THEN
-IF (timer = t_total) THEN
-timer <= (OTHERS => '0');
-timer_done <= '1';
-ELSE
-timer <= timer + 1;
-timer_done <= '0';
-END IF;
-END IF;
-END PROCESS;
+    elsif (rising_edge(clk_i) and en_tcnt = '1') then
+      if (timer = t_total) then
+        timer      <= (others => '0');
+        timer_done <= '1';
+      else
+        timer      <= timer + 1;
+        timer_done <= '0';
+      end if;
+    end if;
+  end process;
 
--- done signal
-done_o <= '1' WHEN (timer = t_total - 2 AND index = 7) ELSE
-          '0';
-done_bit <= '1' WHEN timer = t_total - 1 ELSE
+  -- done signal
+  done_o <= '1' when (timer = t_total - 2 and index = 7) else
             '0';
+  done_bit <= '1' when timer = t_total - 1 else
+              '0';
 
--- state machine
-cstate <= IDLE WHEN rst_n = '0' ELSE
-          nstate WHEN rising_edge(clk_i);
+  -- state machine
+  cstate <= IDLE when rst_n = '0' else
+            nstate when rising_edge(clk_i);
 
-fsm_transition_p : PROCESS (clk_i, rst_n, dv_i, done_bit)
-BEGIN
-nstate <= cstate;
-CASE cstate IS
-WHEN IDLE =>
-IF dv_i = '1' THEN
-nstate <= OUTPUT;
-END IF;
-WHEN OUTPUT =>
-IF (done_bit = '1') THEN
-nstate <= BIT_COMPLETED;
-END IF;
-WHEN BIT_COMPLETED =>
-IF (index = 7) THEN
-IF (dv_i = '1') THEN
-nstate <= OUTPUT;
-ELSE
-nstate <= IDLE;
-END IF;
-ELSE
-nstate <= OUTPUT;
-END IF;
-WHEN OTHERS => NULL;
-END CASE;
-END PROCESS;
+  fsm_transition_p : process (clk_i, rst_n, dv_i, done_bit)
+  begin
+    nstate <= cstate;
+    case cstate is
+      when IDLE =>
+        if dv_i = '1' then
+          nstate <= OUTPUT;
+        end if;
+      when OUTPUT =>
+        if (done_bit = '1') then
+          nstate <= BIT_COMPLETED;
+        end if;
+      when BIT_COMPLETED =>
+        if (index = 7) then
+          if (dv_i = '1') then
+            nstate <= OUTPUT;
+          else
+            nstate <= IDLE;
+          end if;
+        else
+          nstate <= OUTPUT;
+        end if;
+      when others => null;
+    end case;
+  end process;
 
-fsm_output_p : PROCESS (clk_i)
-BEGIN
-IF (rising_edge(clk_i)) THEN
-CASE cstate IS
-WHEN IDLE =>
-en_icnt <= '0';
-en_tcnt <= '0';
-WHEN OUTPUT =>
-en_icnt <= '0';
-en_tcnt <= '1';
-WHEN BIT_COMPLETED =>
-en_icnt <= '1';
-en_tcnt <= '1';
-WHEN OTHERS => NULL;
-END CASE;
-END IF;
-END PROCESS;
-END ARCHITECTURE rtl;
+  fsm_output_p : process (clk_i)
+  begin
+    if (rising_edge(clk_i)) then
+      case cstate is
+        when IDLE =>
+          en_icnt <= '0';
+          en_tcnt <= '0';
+        when OUTPUT =>
+          en_icnt <= '0';
+          en_tcnt <= '1';
+        when BIT_COMPLETED =>
+          en_icnt <= '1';
+          en_tcnt <= '1';
+        when others => null;
+      end case;
+    end if;
+  end process;
+end architecture rtl;

@@ -6,84 +6,88 @@ entity tb_memreadinterface is
 end entity;
 
 architecture tbench of tb_memreadinterface is
-  
-	component memreadinterface
-	generic(
-	    led_num : integer);
-	port ( 
-		clk_i      : in  std_ulogic;
-		rst_n      : in  std_ulogic;
-		mem_a_o    : out std_ulogic_vector(12 downto 0);
-		mem_d_i    : in  std_ulogic_vector(7 downto 0);
-		done_pwm_i : in  std_ulogic;
-		dv_o       : out std_ulogic;
-		d_o        : out std_ulogic_vector(7 downto 0);
-		en_pwm_o   : out std_ulogic;
-		new_data_i : in  std_ulogic);
-	end component memreadinterface;
-  
+
+  component memreadinterface
+    generic
+    (
+      led_num : integer);
+    port
+    (
+      clk_i      : in  std_ulogic;
+      rst_n      : in  std_ulogic;
+      mem_a_o    : out std_ulogic_vector(12 downto 0);
+      mem_d_i    : in  std_ulogic_vector(7 downto 0);
+      done_pwm_i : in  std_ulogic;
+      dv_o       : out std_ulogic;
+      d_o        : out std_ulogic_vector(7 downto 0);
+      en_pwm_o   : out std_ulogic;
+      new_data_i : in  std_ulogic);
+  end component memreadinterface;
+
   component mem
-    port ( 
-      clk_i   : in  std_ulogic;
-      d_i     : in  std_ulogic_vector(7 downto 0);
-      a_i     : in  std_ulogic_vector(12 downto 0);
-      we_i    : in  std_ulogic;
-      a2_i    : in  std_ulogic_vector(12 downto 0);
-      d2_o    : out std_ulogic_vector(7 downto 0));
+    port
+    (
+      clk_i : in  std_ulogic;
+      d_i   : in  std_ulogic_vector(7 downto 0);
+      a_i   : in  std_ulogic_vector(12 downto 0);
+      we_i  : in  std_ulogic;
+      a2_i  : in  std_ulogic_vector(12 downto 0);
+      d2_o  : out std_ulogic_vector(7 downto 0));
   end component mem;
 
-	-- constants
-	constant N : integer := 10;
+  -- constants
+  constant N                         : integer := 10;
 
-	-- simulation signals
-	signal clock_50, reset : std_ulogic;
-	signal simstop : boolean := false;
+  -- simulation signals
+  signal clock_50, reset             : std_ulogic;
+  signal simstop                     : boolean := false;
 
-	-- pwmgen
-	signal pwm_o : std_ulogic;
-	
-	-- interconnect memreadinterface - pwmgen
-	signal pwm_data       : std_ulogic_vector(7 downto 0);
-	signal pwm_data_valid : std_ulogic;
-	signal pwm_done, pwm_reset, en_pwm : std_ulogic;
+  -- pwmgen
+  signal pwm_o                       : std_ulogic;
 
-	-- interconnect memwriteinterface - memreadinterface
-  	signal new_data : std_ulogic;
+  -- interconnect memreadinterface - pwmgen
+  signal pwm_data                    : std_ulogic_vector(7 downto 0);
+  signal pwm_data_valid              : std_ulogic;
+  signal pwm_done, pwm_reset, en_pwm : std_ulogic;
 
-	-- memory
-  	signal mem_di, mem_do : std_ulogic_vector(7 downto 0);
-  	signal mem_wa, mem_ra : std_ulogic_vector(12 downto 0);
-  	signal mem_we         : std_ulogic;
-	
-	procedure RunCycle(signal clk_50 : out std_ulogic) is
-	begin
-		clk_50 <= '0';
-		wait for 10 ns;
-		clk_50 <= '1';
-		wait for 10 ns;
-	end procedure;
-	
-	procedure WriteDummyData(
-		signal clk_50, m_we : out std_ulogic; 
-		signal m_di : out std_ulogic_vector(7 downto 0); 
-		signal m_wa : out std_ulogic_vector(12 downto 0)) is
-	begin
-		m_we <= '1';
+  -- interconnect memwriteinterface - memreadinterface
+  signal new_data                    : std_ulogic;
 
-		for i in 0 to 256 loop
-			m_di <= std_ulogic_vector(to_unsigned(i + 10 ,m_di'length));
-			m_wa <= std_ulogic_vector(to_unsigned(i, m_wa'length));
+  -- memory
+  signal mem_di, mem_do              : std_ulogic_vector(7 downto 0);
+  signal mem_wa, mem_ra              : std_ulogic_vector(12 downto 0);
+  signal mem_we                      : std_ulogic;
 
-			RunCycle(clk_50);
-		end loop;
+  procedure RunCycle(signal clk_50   : out std_ulogic) is
+  begin
+    clk_50 <= '0';
+    wait for 10 ns;
+    clk_50 <= '1';
+    wait for 10 ns;
+  end procedure;
 
-		m_we <= '0';
-	end procedure;
+  procedure WriteDummyData(
+    signal clk_50, m_we : out std_ulogic;
+    signal m_di         : out std_ulogic_vector(7 downto 0);
+    signal m_wa         : out std_ulogic_vector(12 downto 0)) is
+  begin
+    m_we <= '1';
+
+    for i in 0 to 256 loop
+      m_di <= std_ulogic_vector(to_unsigned(i + 10, m_di'length));
+      m_wa <= std_ulogic_vector(to_unsigned(i, m_wa'length));
+
+      RunCycle(clk_50);
+    end loop;
+
+    m_we <= '0';
+  end procedure;
 
 begin
 
   mem_i0 : mem
-  port map (
+  port map
+  (
     clk_i => clock_50,
     d_i   => mem_di,
     a_i   => mem_wa,
@@ -92,47 +96,49 @@ begin
     d2_o  => mem_do);
 
   memreadinterface_i0 : memreadinterface
-	generic map ( 
-	    led_num => N)
-  port map (
-    clk_i      	=> clock_50,
-    rst_n      	=> reset,
-    mem_a_o     => mem_ra,
-    mem_d_i     => mem_do,
-    dv_o      	=> pwm_data_valid,
-    d_o     	=> pwm_data,
-	done_pwm_i 	=> pwm_done,
-	en_pwm_o 	=> en_pwm,
-	new_data_i	=> new_data);
+  generic
+  map (
+  led_num => N)
+  port
+  map (
+  clk_i      => clock_50,
+  rst_n      => reset,
+  mem_a_o    => mem_ra,
+  mem_d_i    => mem_do,
+  dv_o       => pwm_data_valid,
+  d_o        => pwm_data,
+  done_pwm_i => pwm_done,
+  en_pwm_o   => en_pwm,
+  new_data_i => new_data);
 
   -- simulate clock, reset
-  reset <= '1', '0' after 20 ns, '1' after 40 ns;
+  reset   <= '1', '0' after 20 ns, '1' after 40 ns;
   simstop <= true after 1000 us;
 
-	clk_p : process
-    begin
+  clk_p : process
+  begin
 
-		pwm_done <= '0';
+    pwm_done <= '0';
 
-		WriteDummyData(clock_50, mem_we, mem_di, mem_wa);
-		
-		new_data <= '1';
-		RunCycle(clock_50);
+    WriteDummyData(clock_50, mem_we, mem_di, mem_wa);
 
-		new_data <= '0';
+    new_data <= '1';
+    RunCycle(clock_50);
 
-		while True loop
+    new_data <= '0';
 
-			for i in 0 to 64*8 loop
-				RunCycle(clock_50);
-			end loop;
-			pwm_done <= '1';
+    while True loop
 
-    		RunCycle(clock_50);
+      for i in 0 to 64 * 8 loop
+        RunCycle(clock_50);
+      end loop;
+      pwm_done <= '1';
 
-			pwm_done <= '0';
-		end loop;
-		wait;
-    end process clk_p;
+      RunCycle(clock_50);
+
+      pwm_done <= '0';
+    end loop;
+    wait;
+  end process clk_p;
 
 end; -- architecture
