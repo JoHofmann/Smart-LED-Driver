@@ -2,21 +2,21 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ws2815B_driver_tb is
+entity smart_led_driver_tb is
 end entity;
 
-architecture tbench of ws2815B_driver_tb is
+architecture tbench of smart_led_driver_tb is
 
-  component ws2815B_driver is
+  component smart_led_driver is
     port
     (
-      CLOCK_50      : in  std_ulogic;
-      RESET_N       : in  std_ulogic;
-      SPI_CLK_IN    : in  std_ulogic;
-      SPI_MOSI_IN   : in  std_ulogic;
-      SPI_CS_IN     : in  std_ulogic;
-      INTERRUPT_OUT : out std_ulogic;
-      SERIAL_OUT    : out std_ulogic);
+      clock_50      : in  std_ulogic;
+      reset_n       : in  std_ulogic;
+      spi_clk_in    : in  std_ulogic;
+      spi_mosi_in   : in  std_ulogic;
+      spi_cs_in     : in  std_ulogic;
+      interrupt_out : out std_ulogic;
+      serial_out    : out std_ulogic);
   end component;
 
   -- constants
@@ -73,16 +73,16 @@ architecture tbench of ws2815B_driver_tb is
 
 begin
 
-  WS2815B_Driver_i0 : ws2815b_driver
+  smart_led_driver_i0 : smart_led_driver
   port map
   (
-    CLOCK_50      => clock_50,
-    RESET_N       => reset,
-    SPI_CLK_IN    => spi_clk,
-    SPI_MOSI_IN   => spi_mosi,
-    SPI_CS_IN     => spi_cs,
-    INTERRUPT_OUT => interrupt,
-    SERIAL_OUT    => serial_out);
+    clock_50      => clock_50,
+    reset_n       => reset,
+    spi_clk_in    => spi_clk,
+    spi_mosi_in   => spi_mosi,
+    spi_cs_in     => spi_cs,
+    interrupt_out => interrupt,
+    serial_out    => serial_out);
 
   -- simulate single spi transmission
   spi_gen_p : process

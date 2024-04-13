@@ -2,26 +2,26 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ws2815b_driver is
+entity smart_led_driver is
   port
   (
-    CLOCK_50      : in  std_ulogic;
-    RESET_N       : in  std_ulogic;
-    SPI_CLK_IN    : in  std_ulogic;
-    SPI_MOSI_IN   : in  std_ulogic;
-    SPI_CS_IN     : in  std_ulogic;
-    INTERRUPT_OUT : out std_ulogic;
-    SERIAL_OUT    : out std_ulogic;
-    LA_0          : out std_ulogic;
-    LA_1          : out std_ulogic;
-    LA_2          : out std_ulogic;
-    LA_3          : out std_ulogic;
-    LA_4          : out std_ulogic;
-    LA_5          : out std_ulogic;
-    LA_6          : out std_ulogic);
+    clock_50      : in  std_ulogic;
+    reset_n       : in  std_ulogic;
+    spi_clk_in    : in  std_ulogic;
+    spi_mosi_in   : in  std_ulogic;
+    spi_cs_in     : in  std_ulogic;
+    interrupt_out : out std_ulogic;
+    serial_out    : out std_ulogic;
+    la_0          : out std_ulogic;
+    la_1          : out std_ulogic;
+    la_2          : out std_ulogic;
+    la_3          : out std_ulogic;
+    la_4          : out std_ulogic;
+    la_5          : out std_ulogic;
+    la_6          : out std_ulogic);
 end entity;
 
-architecture rtl of ws2815b_driver is
+architecture rtl of smart_led_driver is
 
   -- configuration
   constant CLOCK_FREQ     : natural := 12_000_000; -- system clock
@@ -133,13 +133,13 @@ architecture rtl of ws2815b_driver is
 
 begin
 
-  LA_0          <= CLOCK_50;
-  LA_1          <= RESET_N;
-  LA_2          <= pwm;
-  LA_3          <= SPI_CLK_IN;
-  LA_4          <= pwm;
-  LA_5          <= SPI_CS_IN;
-  LA_6          <= idle;
+  la_0          <= clock_50;
+  la_1          <= reset_n;
+  la_2          <= pwm;
+  la_3          <= spi_clk_in;
+  la_4          <= pwm;
+  la_5          <= spi_cs_in;
+  la_6          <= idle;
 
   -- signal mapping	
   SERIAL_OUT    <= pwm;
@@ -154,8 +154,8 @@ begin
   TOTAL_TIME => TOTAL_TIME)
   port map
   (
-    clk_i  => CLOCK_50,
-    rst_n  => RESET_N,
+    clk_i  => clock_50,
+    rst_n  => reset_n,
     d_i    => pwm_data,
     dv_i   => pwm_data_valid,
     en_i   => pwm_en,
@@ -170,8 +170,8 @@ begin
   N          => N)
   port
   map (
-  clk_i       => CLOCK_50,
-  rst_n       => RESET_N,
+  clk_i       => clock_50,
+  rst_n       => reset_n,
   mem_a_o     => mem_ra,
   mem_d_i     => mem_rd,
   dv_o        => pwm_data_valid,
@@ -184,7 +184,7 @@ begin
   mem_i0 : mem
   port
   map (
-  clk_i => CLOCK_50,
+  clk_i => clock_50,
   wd_i  => mem_wd,
   wa_i  => mem_wa,
   we_i  => mem_we,
@@ -197,8 +197,8 @@ begin
   N => N)
   port
   map(
-  clk_i       => CLOCK_50,
-  rst_n       => RESET_N,
+  clk_i       => clock_50,
+  rst_n       => reset_n,
   mem_a_o     => mem_wa,
   mem_d_o     => mem_wd,
   mem_we_o    => mem_we,
@@ -209,7 +209,7 @@ begin
   spi_slave_i0 : spi_slave
   port
   map(
-  rst_n      => RESET_N,
+  rst_n      => reset_n,
   spi_cs_i   => SPI_CS_IN,
   spi_clk_i  => SPI_CLK_IN,
   spi_mosi_i => SPI_MOSI_IN,
