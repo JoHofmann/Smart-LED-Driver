@@ -24,12 +24,13 @@ end entity;
 architecture rtl of smart_led_driver is
 
   -- configuration
+  constant LED_COUNT      : natural := 100;
+  constant N              : natural := LED_COUNT * 3; --> N = number of bytes => N = LED_count*3
   constant CLOCK_FREQ     : natural := 12_000_000; -- system clock
   constant LOW_TIME       : natural := 300; -- ns
   constant HIGH_TIME      : natural := 1_000; -- ns
-  constant TOTAL_TIME     : natural := 12_500; -- ns
+  constant TOTAL_TIME     : natural := 1_250; -- ns
   constant RESET_TIME     : natural := 280_000; -- ns
-  constant N              : integer := 24 * 3; --> N = number of bytes => N = LED_count*3
 
   -- spi_slave x memwriteinterface
   signal spi_data_valid   : std_ulogic;

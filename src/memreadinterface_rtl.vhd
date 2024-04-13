@@ -7,7 +7,7 @@ entity memreadinterface is
   (
     CLOCK_FREQ : natural;
     RESET_TIME : natural;
-    N          : integer);
+    N          : natural);
   port
   (
     clk_i       : in  std_ulogic;
@@ -25,7 +25,7 @@ end entity memreadinterface;
 architecture rtl of memreadinterface is
 
   -- constants
-  constant t_reset : integer := CLOCK_FREQ/1_000_000 * RESET_TIME/1000 - 1; -- Reset time -> >50 us
+  constant t_reset : natural := CLOCK_FREQ/1_000_000 * RESET_TIME/1000 - 1;
 
   -- type declaration
   type state_t is (IDLE, FETCH, DELIVER, STREAM, RESET);
@@ -104,8 +104,7 @@ begin
 
       when STREAM =>
         if done_pwm_i = '1' then
-          --					if index = N-1 then
-          if index = 9 - 1 then
+          if index = N - 1 then
             nstate <= RESET;
           else
             nstate <= FETCH;
