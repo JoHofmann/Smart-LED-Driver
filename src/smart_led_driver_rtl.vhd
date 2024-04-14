@@ -32,6 +32,10 @@ architecture rtl of smart_led_driver is
   constant TOTAL_TIME     : natural := 1_250; -- ns
   constant RESET_TIME     : natural := 280_000; -- ns
 
+  constant DATA_WIDTH     : natural := 8;
+  -- TODO calculate ADDR_WIDTH
+  constant ADDR_WIDTH     : natural := 12;
+
   -- spi_slave x memwriteinterface
   signal spi_data_valid   : std_ulogic;
   signal spi_data         : std_ulogic_vector(7 downto 0);
@@ -48,8 +52,8 @@ architecture rtl of smart_led_driver is
   signal pwm              : std_ulogic;
 
   -- memory
-  signal mem_wd, mem_rd   : std_ulogic_vector(7 downto 0);
-  signal mem_wa, mem_ra   : std_ulogic_vector(12 downto 0);
+  signal mem_wd, mem_rd   : std_ulogic_vector(DATA_WIDTH - 1 downto 0);
+  signal mem_wa, mem_ra   : std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
   signal mem_we           : std_ulogic;
 
   -- status
@@ -76,15 +80,17 @@ architecture rtl of smart_led_driver is
   component memreadinterface
     generic
     (
-      CLOCK_FREQ : natural;
-      RESET_TIME : natural;
-      N          : natural);
+      CLOCK_FREQ     : natural;
+      RESET_TIME     : natural;
+      N              : natural;
+      MEM_DATA_WIDTH : natural; -- Width of each data word
+      MEM_ADDR_WIDTH : natural); -- Address width
     port
     (
       clk_i       : in  std_ulogic;
       rst_n       : in  std_ulogic;
-      mem_a_o     : out std_ulogic_vector(12 downto 0);
-      mem_d_i     : in  std_ulogic_vector(7 downto 0);
+      mem_a_o     : out std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
+      mem_d_i     : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0);
       done_pwm_i  : in  std_ulogic;
       dv_o        : out std_ulogic;
       d_o         : out std_ulogic_vector(7 downto 0);
@@ -97,23 +103,25 @@ architecture rtl of smart_led_driver is
     port
     (
       clk_i : in  std_ulogic;
-      wd_i  : in  std_ulogic_vector(7 downto 0); -- Write Data
-      wa_i  : in  std_ulogic_vector(12 downto 0); -- Write Address
+      wd_i  : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0); -- Write Data
+      wa_i  : in  std_ulogic_vector(ADDR_WIDTH - 1 downto 0); -- Write Address
       we_i  : in  std_ulogic; -- Write Enable
-      rd_o  : out std_ulogic_vector(7 downto 0); -- Read Data
-      ra_i  : in  std_ulogic_vector(12 downto 0)); -- Read Address 
+      rd_o  : out std_ulogic_vector(DATA_WIDTH - 1 downto 0); -- Read Data
+      ra_i  : in  std_ulogic_vector(ADDR_WIDTH - 1 downto 0)); -- Read Address 
   end component;
 
   component memwriteinterface
     generic
     (
-      N : natural);
+      N              : natural;
+      MEM_DATA_WIDTH : natural; -- Width of each data word
+      MEM_ADDR_WIDTH : natural); -- Address width
     port
     (
       clk_i       : in  std_ulogic;
       rst_n       : in  std_ulogic;
-      mem_a_o     : out std_ulogic_vector(12 downto 0);
-      mem_d_o     : out std_ulogic_vector(7 downto 0);
+      mem_a_o     : out std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
+      mem_d_o     : out std_ulogic_vector(DATA_WIDTH - 1 downto 0);
       mem_we_o    : out std_ulogic;
       dv_i        : in  std_ulogic;
       d_i         : in  std_ulogic_vector(7 downto 0);
@@ -166,9 +174,11 @@ begin
   memreadinterface_i0 : memreadinterface
   generic
   map (
-  CLOCK_FREQ => CLOCK_FREQ,
-  RESET_TIME => RESET_TIME,
-  N          => N)
+  CLOCK_FREQ     => CLOCK_FREQ,
+  RESET_TIME     => RESET_TIME,
+  N              => N,
+  MEM_DATA_WIDTH => DATA_WIDTH,
+  MEM_ADDR_WIDTH => ADDR_WIDTH)
   port
   map (
   clk_i       => clock_50,
@@ -195,7 +205,9 @@ begin
   memwriteinterface_i0 : memwriteinterface
   generic
   map (
-  N => N)
+  N              => N,
+  MEM_DATA_WIDTH => DATA_WIDTH,
+  MEM_ADDR_WIDTH => ADDR_WIDTH)
   port
   map(
   clk_i       => clock_50,
