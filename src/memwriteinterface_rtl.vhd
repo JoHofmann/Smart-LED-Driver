@@ -23,8 +23,6 @@ end entity;
 architecture rtl of memwriteinterface is
 
   signal index               : unsigned(MEM_ADDR_WIDTH - 1 downto 0);
-  signal en_icnt             : std_ulogic;
-  signal new_data            : std_ulogic;
 
   -- data valid signals for syncing
   signal dv1, dv2, dv3, s_dv : std_ulogic;
@@ -35,34 +33,34 @@ begin
   sync_data_valid : process (clk_i, rst_n)
   begin
     if (rst_n = '0') then
-      dv1  <= '0';
-      dv2  <= '0';
-      dv3  <= '0';
-      s_dv <= '0';
+      dv1 <= '0';
+      dv2 <= '0';
+      dv3 <= '0';
     elsif (rising_edge(clk_i)) then
-      dv1  <= dv_i;
-      dv2  <= dv1;
-      dv3  <= dv2;
-      s_dv <= not dv3 and dv2; -- rising edge detection
+      dv1 <= dv_i;
+      dv2 <= dv1;
+      dv3 <= dv2;
     end if;
   end process;
+
+  s_dv        <= not dv3 and dv2; -- rising edge detection
 
   new_frame_o <= '1' when index = N - 1 and s_dv = '1' else
                  '0';
 
-  mem_d_o  <= d_i when rising_edge(clk_i) and s_dv = '1';
+  mem_d_o <= d_i when s_dv = '1' else
+             (others => '0');
   mem_a_o  <= std_ulogic_vector(index);
   mem_we_o <= s_dv;
-
-  en_icnt  <= s_dv when rising_edge(clk_i);
 
   index_counter_p : process (clk_i, rst_n)
   begin
     if (rst_n = '0') then
       index <= (others => '0');
-    elsif (rising_edge(clk_i) and en_icnt = '1') then
+    elsif (rising_edge(clk_i) and s_dv = '1') then
       if (index = N - 1) then
         index <= (others => '0');
+
       else
         index <= index + 1;
       end if;

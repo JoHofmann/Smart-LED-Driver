@@ -15,11 +15,11 @@ end entity;
 
 architecture rtl of spi_slave is
 
-  signal index, nindex : unsigned(7 downto 0);
-  signal en_icnt       : std_ulogic;
+  signal index        : unsigned(7 downto 0);
+  signal en_icnt      : std_ulogic;
 
-  signal data1, data2  : std_ulogic_vector(7 downto 0);
-  signal toggle, dv    : std_ulogic;
+  signal data1, data2 : std_ulogic_vector(7 downto 0);
+  signal toggle, dv   : std_ulogic;
 
 begin
 

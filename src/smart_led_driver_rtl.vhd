@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity smart_led_driver is
   port
   (
-    clock_50      : in  std_ulogic;
+    clock         : in  std_ulogic;
     reset_n       : in  std_ulogic;
     spi_clk_in    : in  std_ulogic;
     spi_mosi_in   : in  std_ulogic;
@@ -142,10 +142,10 @@ architecture rtl of smart_led_driver is
 
 begin
 
-  la_0          <= clock_50;
-  la_1          <= spi_data_valid;
+  la_0          <= clock;
+  la_1          <= mem_we;
   la_2          <= idle;
-  la_3          <= spi_clk_in;
+  la_3          <= new_frame;
   la_4          <= pwm;
   la_5          <= spi_cs_in;
   la_6          <= idle;
@@ -163,7 +163,7 @@ begin
   TOTAL_TIME => TOTAL_TIME)
   port map
   (
-    clk_i  => clock_50,
+    clk_i  => clock,
     rst_n  => reset_n,
     d_i    => pwm_data,
     dv_i   => pwm_data_valid,
@@ -181,7 +181,7 @@ begin
   MEM_ADDR_WIDTH => ADDR_WIDTH)
   port
   map (
-  clk_i       => clock_50,
+  clk_i       => clock,
   rst_n       => reset_n,
   mem_a_o     => mem_ra,
   mem_d_i     => mem_rd,
@@ -195,7 +195,7 @@ begin
   mem_i0 : mem
   port
   map (
-  clk_i => clock_50,
+  clk_i => clock,
   wd_i  => mem_wd,
   wa_i  => mem_wa,
   we_i  => mem_we,
@@ -210,7 +210,7 @@ begin
   MEM_ADDR_WIDTH => ADDR_WIDTH)
   port
   map(
-  clk_i       => clock_50,
+  clk_i       => clock,
   rst_n       => reset_n,
   mem_a_o     => mem_wa,
   mem_d_o     => mem_wd,

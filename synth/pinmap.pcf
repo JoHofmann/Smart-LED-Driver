@@ -1,5 +1,5 @@
 # pinmap.pcf
-set_io --warn-no-port clock_50      D1
+set_io --warn-no-port clock      D1
 set_io --warn-no-port reset_n       B3
 
 set_io --warn-no-port spi_clk_in    B1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               1
