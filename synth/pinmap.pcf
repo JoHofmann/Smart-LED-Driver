@@ -2,8 +2,8 @@
 set_io --warn-no-port clock_50      D1
 set_io --warn-no-port reset_n       B3
 
-set_io --warn-no-port spi_clk_in    A1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               1
-set_io --warn-no-port spi_mosi_in   B1
+set_io --warn-no-port spi_clk_in    B1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               1
+set_io --warn-no-port spi_mosi_in   A1
 set_io --warn-no-port spi_cs_in     E2
 
 set_io --warn-no-port interrupt_out B6

@@ -135,16 +135,16 @@ architecture rtl of smart_led_driver is
 begin
 
   la_0          <= clock_50;
-  la_1          <= reset_n;
-  la_2          <= pwm;
+  la_1          <= spi_data_valid;
+  la_2          <= idle;
   la_3          <= spi_clk_in;
   la_4          <= pwm;
   la_5          <= spi_cs_in;
   la_6          <= idle;
 
   -- signal mapping	
-  SERIAL_OUT    <= pwm;
-  INTERRUPT_OUT <= idle;
+  serial_out    <= pwm;
+  interrupt_out <= idle;
 
   pwmgen_i0 : pwmgen
   generic

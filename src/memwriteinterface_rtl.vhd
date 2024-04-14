@@ -22,7 +22,6 @@ architecture rtl of memwriteinterface is
 
   signal index               : unsigned(12 downto 0);
   signal en_icnt             : std_ulogic;
-
   signal new_data            : std_ulogic;
 
   -- data valid signals for syncing
