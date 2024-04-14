@@ -5,15 +5,17 @@ use ieee.numeric_std.all;
 entity memreadinterface is
   generic
   (
-    CLOCK_FREQ : natural;
-    RESET_TIME : natural;
-    N          : natural);
+    CLOCK_FREQ     : natural;
+    RESET_TIME     : natural;
+    N              : natural;
+    MEM_DATA_WIDTH : natural; -- Width of each data word
+    MEM_ADDR_WIDTH : natural); -- Address width
   port
   (
     clk_i       : in  std_ulogic;
     rst_n       : in  std_ulogic;
-    mem_a_o     : out std_ulogic_vector(12 downto 0);
-    mem_d_i     : in  std_ulogic_vector(7 downto 0);
+    mem_a_o     : out std_ulogic_vector(MEM_ADDR_WIDTH - 1 downto 0);
+    mem_d_i     : in  std_ulogic_vector(MEM_DATA_WIDTH - 1 downto 0);
     done_pwm_i  : in  std_ulogic;
     dv_o        : out std_ulogic;
     d_o         : out std_ulogic_vector(7 downto 0);
@@ -25,7 +27,7 @@ end entity memreadinterface;
 architecture rtl of memreadinterface is
 
   -- constants
-  constant t_reset : integer := CLOCK_FREQ/1_000_000 * RESET_TIME/1000 - 1; -- Reset time -> >50 us
+  constant t_reset : natural := CLOCK_FREQ/1_000_000 * RESET_TIME/1000 - 1;
 
   -- type declaration
   type state_t is (IDLE, FETCH, DELIVER, STREAM, RESET);
@@ -34,7 +36,7 @@ architecture rtl of memreadinterface is
   signal cstate, nstate                       : state_t;
 
   -- index counter
-  signal index                                : unsigned(12 downto 0);
+  signal index                                : unsigned(MEM_ADDR_WIDTH - 1 downto 0);
 
   -- reset timer
   signal reset_counter                        : unsigned(13 downto 0);
@@ -104,8 +106,7 @@ begin
 
       when STREAM =>
         if done_pwm_i = '1' then
-          --					if index = N-1 then
-          if index = 9 - 1 then
+          if index = N - 1 then
             nstate <= RESET;
           else
             nstate <= FETCH;

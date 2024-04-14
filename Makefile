@@ -1,4 +1,4 @@
-PROJECT=ws2815b_driver
+PROJECT=smart_led_driver
 
 DEVICE=lp1k
 PACKAGE=cm36

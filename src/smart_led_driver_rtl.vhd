@@ -2,34 +2,39 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity ws2815b_driver is
+entity smart_led_driver is
   port
   (
-    CLOCK_50      : in  std_ulogic;
-    RESET_N       : in  std_ulogic;
-    SPI_CLK_IN    : in  std_ulogic;
-    SPI_MOSI_IN   : in  std_ulogic;
-    SPI_CS_IN     : in  std_ulogic;
-    INTERRUPT_OUT : out std_ulogic;
-    SERIAL_OUT    : out std_ulogic;
-    LA_0          : out std_ulogic;
-    LA_1          : out std_ulogic;
-    LA_2          : out std_ulogic;
-    LA_3          : out std_ulogic;
-    LA_4          : out std_ulogic;
-    LA_5          : out std_ulogic;
-    LA_6          : out std_ulogic);
+    clock         : in  std_ulogic;
+    reset_n       : in  std_ulogic;
+    spi_clk_in    : in  std_ulogic;
+    spi_mosi_in   : in  std_ulogic;
+    spi_cs_in     : in  std_ulogic;
+    interrupt_out : out std_ulogic;
+    serial_out    : out std_ulogic;
+    la_0          : out std_ulogic;
+    la_1          : out std_ulogic;
+    la_2          : out std_ulogic;
+    la_3          : out std_ulogic;
+    la_4          : out std_ulogic;
+    la_5          : out std_ulogic;
+    la_6          : out std_ulogic);
 end entity;
 
-architecture rtl of ws2815b_driver is
+architecture rtl of smart_led_driver is
 
   -- configuration
+  constant LED_COUNT      : natural := 100;
+  constant N              : natural := LED_COUNT * 3; --> N = number of bytes => N = LED_count*3
   constant CLOCK_FREQ     : natural := 12_000_000; -- system clock
-  constant LOW_TIME       : natural := 350; -- ns
-  constant HIGH_TIME      : natural := 700; -- ns
+  constant LOW_TIME       : natural := 300; -- ns
+  constant HIGH_TIME      : natural := 1_000; -- ns
   constant TOTAL_TIME     : natural := 1_250; -- ns
   constant RESET_TIME     : natural := 280_000; -- ns
-  constant N              : natural := 3 * 3; --> N = number of bytes => N = LED_count*3
+
+  constant DATA_WIDTH     : natural := 8;
+  -- TODO calculate ADDR_WIDTH
+  constant ADDR_WIDTH     : natural := 12;
 
   -- spi_slave x memwriteinterface
   signal spi_data_valid   : std_ulogic;
@@ -47,8 +52,8 @@ architecture rtl of ws2815b_driver is
   signal pwm              : std_ulogic;
 
   -- memory
-  signal mem_wd, mem_rd   : std_ulogic_vector(7 downto 0);
-  signal mem_wa, mem_ra   : std_ulogic_vector(12 downto 0);
+  signal mem_wd, mem_rd   : std_ulogic_vector(DATA_WIDTH - 1 downto 0);
+  signal mem_wa, mem_ra   : std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
   signal mem_we           : std_ulogic;
 
   -- status
@@ -75,15 +80,17 @@ architecture rtl of ws2815b_driver is
   component memreadinterface
     generic
     (
-      CLOCK_FREQ : natural;
-      RESET_TIME : natural;
-      N          : natural);
+      CLOCK_FREQ     : natural;
+      RESET_TIME     : natural;
+      N              : natural;
+      MEM_DATA_WIDTH : natural; -- Width of each data word
+      MEM_ADDR_WIDTH : natural); -- Address width
     port
     (
       clk_i       : in  std_ulogic;
       rst_n       : in  std_ulogic;
-      mem_a_o     : out std_ulogic_vector(12 downto 0);
-      mem_d_i     : in  std_ulogic_vector(7 downto 0);
+      mem_a_o     : out std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
+      mem_d_i     : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0);
       done_pwm_i  : in  std_ulogic;
       dv_o        : out std_ulogic;
       d_o         : out std_ulogic_vector(7 downto 0);
@@ -96,23 +103,25 @@ architecture rtl of ws2815b_driver is
     port
     (
       clk_i : in  std_ulogic;
-      wd_i  : in  std_ulogic_vector(7 downto 0); -- Write Data
-      wa_i  : in  std_ulogic_vector(12 downto 0); -- Write Address
+      wd_i  : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0); -- Write Data
+      wa_i  : in  std_ulogic_vector(ADDR_WIDTH - 1 downto 0); -- Write Address
       we_i  : in  std_ulogic; -- Write Enable
-      rd_o  : out std_ulogic_vector(7 downto 0); -- Read Data
-      ra_i  : in  std_ulogic_vector(12 downto 0)); -- Read Address 
+      rd_o  : out std_ulogic_vector(DATA_WIDTH - 1 downto 0); -- Read Data
+      ra_i  : in  std_ulogic_vector(ADDR_WIDTH - 1 downto 0)); -- Read Address 
   end component;
 
   component memwriteinterface
     generic
     (
-      N : natural);
+      N              : natural;
+      MEM_DATA_WIDTH : natural; -- Width of each data word
+      MEM_ADDR_WIDTH : natural); -- Address width
     port
     (
       clk_i       : in  std_ulogic;
       rst_n       : in  std_ulogic;
-      mem_a_o     : out std_ulogic_vector(12 downto 0);
-      mem_d_o     : out std_ulogic_vector(7 downto 0);
+      mem_a_o     : out std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
+      mem_d_o     : out std_ulogic_vector(DATA_WIDTH - 1 downto 0);
       mem_we_o    : out std_ulogic;
       dv_i        : in  std_ulogic;
       d_i         : in  std_ulogic_vector(7 downto 0);
@@ -133,16 +142,17 @@ architecture rtl of ws2815b_driver is
 
 begin
 
-  LA_0          <= CLOCK_50;
-  LA_1          <= RESET_N;
-  LA_2          <= pwm;
-  LA_3          <= SPI_CLK_IN;
-  LA_4          <= pwm;
-  LA_5          <= SPI_CS_IN;
-  LA_6          <= idle;
+  la_0          <= clock;
+  la_1          <= mem_we;
+  la_2          <= idle;
+  la_3          <= new_frame;
+  la_4          <= pwm;
+  la_5          <= spi_cs_in;
+  la_6          <= idle;
+
   -- signal mapping	
-  SERIAL_OUT    <= pwm;
-  INTERRUPT_OUT <= idle;
+  serial_out    <= pwm;
+  interrupt_out <= idle;
 
   pwmgen_i0 : pwmgen
   generic
@@ -153,8 +163,8 @@ begin
   TOTAL_TIME => TOTAL_TIME)
   port map
   (
-    clk_i  => CLOCK_50,
-    rst_n  => RESET_N,
+    clk_i  => clock,
+    rst_n  => reset_n,
     d_i    => pwm_data,
     dv_i   => pwm_data_valid,
     en_i   => pwm_en,
@@ -163,14 +173,16 @@ begin
 
   memreadinterface_i0 : memreadinterface
   generic
-  map(
-  CLOCK_FREQ => CLOCK_FREQ,
-  RESET_TIME => RESET_TIME,
-  N          => N)
+  map (
+  CLOCK_FREQ     => CLOCK_FREQ,
+  RESET_TIME     => RESET_TIME,
+  N              => N,
+  MEM_DATA_WIDTH => DATA_WIDTH,
+  MEM_ADDR_WIDTH => ADDR_WIDTH)
   port
-  map(
-  clk_i       => CLOCK_50,
-  rst_n       => RESET_N,
+  map (
+  clk_i       => clock,
+  rst_n       => reset_n,
   mem_a_o     => mem_ra,
   mem_d_i     => mem_rd,
   dv_o        => pwm_data_valid,
@@ -182,8 +194,8 @@ begin
 
   mem_i0 : mem
   port
-  map(
-  clk_i => CLOCK_50,
+  map (
+  clk_i => clock,
   wd_i  => mem_wd,
   wa_i  => mem_wa,
   we_i  => mem_we,
@@ -192,12 +204,14 @@ begin
 
   memwriteinterface_i0 : memwriteinterface
   generic
-  map(
-  N => N)
+  map (
+  N              => N,
+  MEM_DATA_WIDTH => DATA_WIDTH,
+  MEM_ADDR_WIDTH => ADDR_WIDTH)
   port
   map(
-  clk_i       => CLOCK_50,
-  rst_n       => RESET_N,
+  clk_i       => clock,
+  rst_n       => reset_n,
   mem_a_o     => mem_wa,
   mem_d_o     => mem_wd,
   mem_we_o    => mem_we,
@@ -208,7 +222,7 @@ begin
   spi_slave_i0 : spi_slave
   port
   map(
-  rst_n      => RESET_N,
+  rst_n      => reset_n,
   spi_cs_i   => SPI_CS_IN,
   spi_clk_i  => SPI_CLK_IN,
   spi_mosi_i => SPI_MOSI_IN,

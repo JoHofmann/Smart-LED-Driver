@@ -7,10 +7,10 @@ entity mem is
   (
     clk_i : in  std_ulogic;
     wd_i  : in  std_ulogic_vector(7 downto 0); -- Write Data
-    wa_i  : in  std_ulogic_vector(12 downto 0); -- Write Address
+    wa_i  : in  std_ulogic_vector(11 downto 0); -- Write Address
     we_i  : in  std_ulogic; -- Write Enable
     rd_o  : out std_ulogic_vector(7 downto 0); -- Read Data
-    ra_i  : in  std_ulogic_vector(12 downto 0)); -- Read Address 
+    ra_i  : in  std_ulogic_vector(11 downto 0)); -- Read Address 
 end entity mem;
 
 architecture rtl of mem is
