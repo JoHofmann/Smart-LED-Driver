@@ -79,10 +79,10 @@ begin
     if (rst_n = '0') then
       index <= (others => '0');
     elsif (rising_edge(clk_i)) then
-      if (inactive = '1') then
-        index <= (others => '0');
-      elsif (s_dv = '1') then
-        --if (s_dv = '1') then
+      --  if (inactive = '1') then
+      --    index <= (others => '0');
+      --  elsif (s_dv = '1') then
+      if (s_dv = '1') then
         if (index = N - 1) then
           index <= (others => '0');
         else
@@ -90,7 +90,6 @@ begin
         end if;
       end if;
     end if;
-
   end process;
 
 end architecture rtl;

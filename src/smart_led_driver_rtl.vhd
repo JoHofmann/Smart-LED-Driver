@@ -24,7 +24,7 @@ end entity;
 architecture rtl of smart_led_driver is
 
   -- configuration
-  constant LED_COUNT      : natural := 1000;
+  constant LED_COUNT      : natural := 246;
   constant N              : natural := LED_COUNT * 3; --> N = number of bytes => N = LED_count*3
   constant CLOCK_FREQ     : natural := 12_000_000; -- system clock
   constant LOW_TIME       : natural := 350; -- ns
@@ -227,7 +227,7 @@ begin
   rst_n      => reset_n,
   spi_cs_i   => spi_cs_in,
   spi_clk_i  => spi_clk_in,
-  spi_mosi_i => SPI_MOSI_IN,
+  spi_mosi_i => spi_mosi_in,
   dv_o       => spi_data_valid,
   d_o        => spi_data);
 
