@@ -17,34 +17,20 @@ entity memwriteinterface is
     mem_we_o    : out std_ulogic;
     dv_i        : in  std_ulogic;
     d_i         : in  std_ulogic_vector(7 downto 0);
-    new_frame_o : out std_ulogic);
+    new_frame_o : out std_ulogic;
+    spi_cs_i    : in  std_ulogic);
 end entity;
 
 architecture rtl of memwriteinterface is
 
-  signal index               : unsigned(MEM_ADDR_WIDTH - 1 downto 0);
+  signal index              : unsigned(MEM_ADDR_WIDTH - 1 downto 0);
+  signal inactive           : std_ulogic;
 
   -- data valid signals for syncing
-  signal dv1, dv2, dv3, s_dv : std_ulogic;
-
-begin
-
-  -- sync dv
-  dv1 <= '0' when rst_n = '0' else
-         dv_i when rising_edge(clk_i);
-  dv2 <= '0' when rst_n = '0' else
-         dv1 when rising_edge(clk_i);
-  dv3 <= '0' when rst_n = '0' else
-         dv2 when rising_edge(clk_i);
-
-  -- rising edge detection
-  s_dv <= '0' when rst_n = '0' else
-          not dv3 and dv2 when rising_edge(clk_i);
-
-  new_frame_o <= '1' when index = N - 1 and s_dv = '1' else
-                 '0';
-  -- data valid signals for syncing
-  signal dv1, dv2, dv3, s_dv : std_ulogic;
+  signal dv1, sync_spi_cs_1 : std_ulogic;
+  signal dv2, sync_spi_cs_2 : std_ulogic;
+  signal dv3                : std_ulogic;
+  signal s_dv               : std_ulogic;
 
 begin
 
@@ -62,9 +48,25 @@ begin
     end if;
   end process;
 
-  s_dv        <= not dv3 and dv2; -- rising edge detection
+  s_dv <= not dv3 and dv2; -- rising edge detection
 
-  new_frame_o <= '1' when index = N - 1 and s_dv = '1' else
+  sync_new_message : process (clk_i, rst_n)
+  begin
+    if (rst_n = '0') then
+      sync_spi_cs_1 <= '0';
+      sync_spi_cs_2 <= '0';
+      inactive      <= '0';
+    elsif (rising_edge(clk_i)) then
+      sync_spi_cs_1 <= spi_cs_i;
+      sync_spi_cs_2 <= sync_spi_cs_1;
+      inactive      <= sync_spi_cs_2;
+    end if;
+  end process;
+
+  new_frame_o <= '1' when index = N - 1
+                 and
+                 s_dv = '1'
+                 else
                  '0';
 
   mem_d_o <= d_i when s_dv = '1' else
@@ -76,14 +78,19 @@ begin
   begin
     if (rst_n = '0') then
       index <= (others => '0');
-    elsif (rising_edge(clk_i) and s_dv = '1') then
-      if (index = N - 1) then
+    elsif (rising_edge(clk_i)) then
+      if (inactive = '1') then
         index <= (others => '0');
-
-      else
-        index <= index + 1;
+      elsif (s_dv = '1') then
+        --if (s_dv = '1') then
+        if (index = N - 1) then
+          index <= (others => '0');
+        else
+          index <= index + 1;
+        end if;
       end if;
     end if;
+
   end process;
 
 end architecture rtl;

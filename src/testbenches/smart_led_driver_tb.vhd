@@ -10,7 +10,7 @@ architecture tbench of smart_led_driver_tb is
   component smart_led_driver is
     port
     (
-      clock_50      : in  std_ulogic;
+      clock         : in  std_ulogic;
       reset_n       : in  std_ulogic;
       spi_clk_in    : in  std_ulogic;
       spi_mosi_in   : in  std_ulogic;
@@ -20,11 +20,11 @@ architecture tbench of smart_led_driver_tb is
   end component;
 
   -- constants
-  constant LED_COUNT               : natural := 100;
+  constant LED_COUNT               : natural := 1000;
   constant N                       : natural := LED_COUNT * 3; --> N = number of bytes e.g. N = LED_count*3
 
   -- simulation signals
-  signal clock_50, reset           : std_ulogic;
+  signal clock, reset              : std_ulogic;
 
   -- spi signals
   signal spi_clk, spi_cs, spi_mosi : std_ulogic;
@@ -32,11 +32,11 @@ architecture tbench of smart_led_driver_tb is
   -- output, interrupt
   signal serial_out, interrupt     : std_ulogic;
 
-  procedure RunCycle(signal clk_50 : out std_ulogic) is
+  procedure RunCycle(signal clk_12 : out std_ulogic) is
   begin
-    clk_50 <= '0';
+    clk_12 <= '0';
     wait for 10 ns;
-    clk_50 <= '1';
+    clk_12 <= '1';
     wait for 10 ns;
   end procedure;
 
@@ -77,7 +77,7 @@ begin
   smart_led_driver_i0 : smart_led_driver
   port map
   (
-    clock_50      => clock_50,
+    clock         => clock,
     reset_n       => reset,
     spi_clk_in    => spi_clk,
     spi_mosi_in   => spi_mosi,
@@ -97,7 +97,7 @@ begin
 
   clk_p : process
   begin
-    RunCycle(clock_50);
+    RunCycle(clock);
   end process clk_p;
 
 end; -- architecture

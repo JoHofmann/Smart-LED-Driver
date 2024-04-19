@@ -24,11 +24,11 @@ end entity;
 architecture rtl of smart_led_driver is
 
   -- configuration
-  constant LED_COUNT      : natural := 100;
+  constant LED_COUNT      : natural := 1000;
   constant N              : natural := LED_COUNT * 3; --> N = number of bytes => N = LED_count*3
   constant CLOCK_FREQ     : natural := 12_000_000; -- system clock
-  constant LOW_TIME       : natural := 300; -- ns
-  constant HIGH_TIME      : natural := 1_000; -- ns
+  constant LOW_TIME       : natural := 350; -- ns
+  constant HIGH_TIME      : natural := 700; -- ns
   constant TOTAL_TIME     : natural := 1_250; -- ns
   constant RESET_TIME     : natural := 280_000; -- ns
 
@@ -125,7 +125,8 @@ architecture rtl of smart_led_driver is
       mem_we_o    : out std_ulogic;
       dv_i        : in  std_ulogic;
       d_i         : in  std_ulogic_vector(7 downto 0);
-      new_frame_o : out std_ulogic);
+      new_frame_o : out std_ulogic;
+      spi_cs_i    : in  std_ulogic);
 
   end component;
 
@@ -217,14 +218,15 @@ begin
   mem_we_o    => mem_we,
   d_i         => spi_data,
   dv_i        => spi_data_valid,
-  new_frame_o => new_frame);
+  new_frame_o => new_frame,
+  spi_cs_i    => spi_cs_in);
 
   spi_slave_i0 : spi_slave
   port
   map(
   rst_n      => reset_n,
-  spi_cs_i   => SPI_CS_IN,
-  spi_clk_i  => SPI_CLK_IN,
+  spi_cs_i   => spi_cs_in,
+  spi_clk_i  => spi_clk_in,
   spi_mosi_i => SPI_MOSI_IN,
   dv_o       => spi_data_valid,
   d_o        => spi_data);

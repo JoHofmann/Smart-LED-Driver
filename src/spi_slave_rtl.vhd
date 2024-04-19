@@ -25,15 +25,11 @@ begin
 
   spi_slave_recieve_p : process (spi_clk_i)
   begin
-
     if rising_edge(spi_clk_i) and spi_cs_i = '0' then
-
       if toggle = '0' then
         data1(to_integer(index)) <= spi_mosi_i;
-
       else
         data2(to_integer(index)) <= spi_mosi_i;
-
       end if;
     end if;
   end process;
@@ -63,11 +59,16 @@ begin
     if (rst_n = '0') then
       index <= (others => '0');
 
-    elsif (rising_edge(spi_clk_i) and en_icnt = '1') then
-      if (index = 7) then
+    elsif (rising_edge(spi_clk_i)) then
+      if (spi_cs_i = '1') then
         index <= (others => '0');
-      else
-        index <= index + 1;
+      end if;
+      if (en_icnt = '1') then
+        if (index = 7) then
+          index <= (others => '0');
+        else
+          index <= index + 1;
+        end if;
       end if;
     end if;
   end process;
