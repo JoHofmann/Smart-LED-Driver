@@ -11,14 +11,7 @@ entity smart_led_driver is
     spi_mosi_in   : in  std_ulogic;
     spi_cs_in     : in  std_ulogic;
     interrupt_out : out std_ulogic;
-    serial_out    : out std_ulogic;
-    la_0          : out std_ulogic;
-    la_1          : out std_ulogic;
-    la_2          : out std_ulogic;
-    la_3          : out std_ulogic;
-    la_4          : out std_ulogic;
-    la_5          : out std_ulogic;
-    la_6          : out std_ulogic);
+    serial_out    : out std_ulogic);
 end entity;
 
 architecture rtl of smart_led_driver is
@@ -142,14 +135,6 @@ architecture rtl of smart_led_driver is
   end component;
 
 begin
-
-  la_0          <= clock;
-  la_1          <= mem_we;
-  la_2          <= idle;
-  la_3          <= new_frame;
-  la_4          <= pwm;
-  la_5          <= spi_cs_in;
-  la_6          <= idle;
 
   -- signal mapping	
   serial_out    <= pwm;

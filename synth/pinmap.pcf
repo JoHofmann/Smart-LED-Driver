@@ -1,5 +1,5 @@
 # pinmap.pcf
-set_io --warn-no-port clock      D1
+set_io --warn-no-port clock         D1
 set_io --warn-no-port reset_n       B3
 
 set_io --warn-no-port spi_clk_in    B1                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               1
@@ -8,11 +8,3 @@ set_io --warn-no-port spi_cs_in     E2
 
 set_io --warn-no-port interrupt_out B6
 set_io --warn-no-port serial_out    A3
-
-set_io --warn-no-port la_0   C6
-set_io --warn-no-port la_1   B4
-set_io --warn-no-port la_2   E3
-set_io --warn-no-port la_3   B5
-set_io --warn-no-port la_4   C2
-set_io --warn-no-port la_5   E1
-set_io --warn-no-port la_6   C5 # A1
