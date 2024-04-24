@@ -19,8 +19,6 @@ end entity;
 
 architecture rtl of spi_slave is
 
-  --  constant index_width : natural := 
-
   signal index        : unsigned(natural(ceil(log2(real(DATA_WIDTH - 1)))) - 1 downto 0);
   signal en_icnt      : std_ulogic;
 
