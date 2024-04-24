@@ -1,24 +1,25 @@
 library ieee;
-use ieee.std_logic_1164.all;
+use ieee.math_real.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 entity memreadinterface is
   generic
   (
-    CLOCK_FREQ     : natural;
-    RESET_TIME     : natural;
-    N              : natural;
-    MEM_DATA_WIDTH : natural; -- Width of each data word
-    MEM_ADDR_WIDTH : natural); -- Address width
+    CLOCK_FREQ : natural;
+    RESET_TIME : natural;
+    N          : natural;
+    DATA_WIDTH : natural; -- Width of each data word
+    ADDR_WIDTH : natural); -- Address width
   port
   (
     clk_i       : in  std_ulogic;
     rst_n       : in  std_ulogic;
-    mem_a_o     : out std_ulogic_vector(MEM_ADDR_WIDTH - 1 downto 0);
-    mem_d_i     : in  std_ulogic_vector(MEM_DATA_WIDTH - 1 downto 0);
+    mem_a_o     : out std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
+    mem_d_i     : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0);
     done_pwm_i  : in  std_ulogic;
     dv_o        : out std_ulogic;
-    d_o         : out std_ulogic_vector(7 downto 0);
+    d_o         : out std_ulogic_vector(DATA_WIDTH - 1 downto 0);
     en_pwm_o    : out std_ulogic;
     idle_o      : out std_ulogic;
     new_frame_i : in  std_ulogic);
@@ -33,14 +34,15 @@ architecture rtl of memreadinterface is
   type state_t is (IDLE, FETCH, DELIVER, STREAM, RESET);
 
   -- signal state machine
-  signal cstate, nstate                       : state_t;
+  signal cstate, nstate     : state_t;
 
   -- index counter
-  signal index                                : unsigned(MEM_ADDR_WIDTH - 1 downto 0);
+  signal index              : unsigned(ADDR_WIDTH - 1 downto 0);
 
   -- reset timer
-  signal reset_counter                        : unsigned(13 downto 0);
-  signal en_reset_counter, done_reset_counter : std_ulogic;
+  signal reset_counter      : unsigned(natural(ceil(log2(real(t_reset)))) - 1 downto 0);
+  signal en_reset_counter   : std_ulogic;
+  signal done_reset_counter : std_ulogic;
 
 begin
 

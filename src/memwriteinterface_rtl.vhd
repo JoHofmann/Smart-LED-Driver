@@ -5,15 +5,15 @@ use ieee.numeric_std.all;
 entity memwriteinterface is
   generic
   (
-    N              : natural;
-    MEM_DATA_WIDTH : natural; -- Width of each data word
-    MEM_ADDR_WIDTH : natural); -- Address width
+    N          : natural;
+    DATA_WIDTH : natural; -- Width of each data word
+    ADDR_WIDTH : natural); -- Address width
   port
   (
     clk_i       : in  std_ulogic;
     rst_n       : in  std_ulogic;
-    mem_a_o     : out std_ulogic_vector(MEM_ADDR_WIDTH - 1 downto 0);
-    mem_d_o     : out std_ulogic_vector(MEM_DATA_WIDTH - 1 downto 0);
+    mem_a_o     : out std_ulogic_vector(ADDR_WIDTH - 1 downto 0);
+    mem_d_o     : out std_ulogic_vector(DATA_WIDTH - 1 downto 0);
     mem_we_o    : out std_ulogic;
     dv_i        : in  std_ulogic;
     d_i         : in  std_ulogic_vector(7 downto 0);
@@ -23,7 +23,7 @@ end entity;
 
 architecture rtl of memwriteinterface is
 
-  signal index              : unsigned(MEM_ADDR_WIDTH - 1 downto 0);
+  signal index              : unsigned(ADDR_WIDTH - 1 downto 0);
   signal inactive           : std_ulogic;
 
   -- data valid signals for syncing
@@ -66,9 +66,7 @@ begin
   inactive    <= spi_cs_i;
 
   new_frame_o <= '1' when index >= N - 1
-                 and
-                 s_dv = '1'
-                 else
+                 and s_dv = '1' else
                  '0';
 
   mem_d_o <= d_i when s_dv = '1' else

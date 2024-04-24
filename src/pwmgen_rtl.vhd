@@ -1,6 +1,7 @@
 library ieee;
-use ieee.std_logic_1164.all;
+use ieee.math_real.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 entity pwmgen is
   generic
@@ -8,12 +9,13 @@ entity pwmgen is
     CLOCK_FREQ : natural;
     HIGH_TIME  : natural;
     LOW_TIME   : natural;
-    TOTAL_TIME : natural);
+    TOTAL_TIME : natural;
+    DATA_WIDTH : natural);
   port
   (
     clk_i  : in  std_ulogic;
     rst_n  : in  std_ulogic;
-    d_i    : in  std_ulogic_vector(7 downto 0);
+    d_i    : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0);
     dv_i   : in  std_ulogic;
     en_i   : in  std_ulogic;
     pwm_o  : out std_ulogic;
@@ -23,9 +25,9 @@ end entity;
 architecture rtl of pwmgen is
 
   -- timings	(timing for reset time in memreadinterface)
-  constant t_low   : natural := CLOCK_FREQ/1_000_000 * LOW_TIME/1000 - 1; -- -> ~350 ns
-  constant t_high  : natural := CLOCK_FREQ/1_000_000 * HIGH_TIME/1000 - 1; -- -> ~700 ns
-  constant t_total : natural := CLOCK_FREQ/1_000_000 * TOTAL_TIME/1000 - 1; -- -> 1250 ns
+  constant t_low   : natural := CLOCK_FREQ/1_000_000 * LOW_TIME/1000 - 1;
+  constant t_high  : natural := CLOCK_FREQ/1_000_000 * HIGH_TIME/1000 - 1;
+  constant t_total : natural := CLOCK_FREQ/1_000_000 * TOTAL_TIME/1000 - 1;
 
   -- type declaration
   type state_t is (IDLE, OUTPUT, BIT_COMPLETED, REQUEST, RESET);
@@ -34,13 +36,13 @@ architecture rtl of pwmgen is
   signal cstate, nstate       : state_t;
 
   -- data buffer
-  signal data                 : std_ulogic_vector(7 downto 0);
+  signal data                 : std_ulogic_vector(DATA_WIDTH - 1 downto 0);
 
   signal sel_bit              : std_ulogic;
 
   -- counter
-  signal index                : unsigned(2 downto 0);
-  signal timer                : unsigned(6 downto 0);
+  signal index                : unsigned(natural(ceil(log2(real(DATA_WIDTH - 1)))) - 1 downto 0);
+  signal timer                : unsigned(natural(ceil(log2(real(t_total)))) - 1 downto 0);
 
   -- control singals
   signal en_tcnt, en_icnt, t  : std_ulogic;
@@ -72,7 +74,7 @@ begin
       index <= (others => '0');
 
     elsif (rising_edge(clk_i) and en_icnt = '1') then
-      if (index = 7) then
+      if (index = DATA_WIDTH - 1) then
         index <= (others => '0');
       else
         index <= index + 1;
@@ -99,7 +101,7 @@ begin
   end process;
 
   -- done signal
-  done_o <= '1' when (timer = t_total - 2 and index = 7) else
+  done_o <= '1' when (timer = t_total - 2 and index = DATA_WIDTH - 1) else
             '0';
   done_bit <= '1' when timer = t_total - 1 else
               '0';
@@ -121,7 +123,7 @@ begin
           nstate <= BIT_COMPLETED;
         end if;
       when BIT_COMPLETED =>
-        if (index = 7) then
+        if (index = DATA_WIDTH - 1) then
           if (dv_i = '1') then
             nstate <= OUTPUT;
           else

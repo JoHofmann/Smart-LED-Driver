@@ -1,25 +1,29 @@
 library ieee;
-use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 entity mem is
+  generic
+  (
+    DATA_WIDTH : natural;
+    ADDR_WIDTH : natural);
   port
   (
     clk_i : in  std_ulogic;
-    wd_i  : in  std_ulogic_vector(7 downto 0); -- Write Data
-    wa_i  : in  std_ulogic_vector(11 downto 0); -- Write Address
+    wd_i  : in  std_ulogic_vector(DATA_WIDTH - 1 downto 0); -- Write Data
+    wa_i  : in  std_ulogic_vector(ADDR_WIDTH - 1 downto 0); -- Write Address
     we_i  : in  std_ulogic; -- Write Enable
-    rd_o  : out std_ulogic_vector(7 downto 0); -- Read Data
-    ra_i  : in  std_ulogic_vector(11 downto 0)); -- Read Address 
+    rd_o  : out std_ulogic_vector(DATA_WIDTH - 1 downto 0); -- Read Data
+    ra_i  : in  std_ulogic_vector(ADDR_WIDTH - 1 downto 0)); -- Read Address 
 end entity mem;
 
 architecture rtl of mem is
 
-  type mem_t is array (0 to 2 ** wa_i'length - 1) of std_ulogic_vector(7 downto 0);
+  type mem_t is array (0 to 2 ** ADDR_WIDTH - 1) of std_ulogic_vector(DATA_WIDTH - 1 downto 0);
 
   signal memory : mem_t;
 
-  signal wa, ra : integer range 0 to 2 ** wa_i'length - 1;
+  signal wa, ra : integer range 0 to 2 ** ADDR_WIDTH - 1;
 
 begin
 

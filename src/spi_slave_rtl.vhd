@@ -1,8 +1,12 @@
 library ieee;
-use ieee.std_logic_1164.all;
+use ieee.math_real.all;
 use ieee.numeric_std.all;
+use ieee.std_logic_1164.all;
 
 entity spi_slave is
+  generic
+  (
+    DATA_WIDTH : natural);
   port
   (
     rst_n      : in  std_ulogic;
@@ -10,15 +14,17 @@ entity spi_slave is
     spi_clk_i  : in  std_ulogic;
     spi_mosi_i : in  std_ulogic;
     dv_o       : out std_ulogic;
-    d_o        : out std_ulogic_vector(7 downto 0));
+    d_o        : out std_ulogic_vector(DATA_WIDTH - 1 downto 0));
 end entity;
 
 architecture rtl of spi_slave is
 
-  signal index        : unsigned(7 downto 0);
+  --  constant index_width : natural := 
+
+  signal index        : unsigned(natural(ceil(log2(real(DATA_WIDTH - 1)))) - 1 downto 0);
   signal en_icnt      : std_ulogic;
 
-  signal data1, data2 : std_ulogic_vector(7 downto 0);
+  signal data1, data2 : std_ulogic_vector(DATA_WIDTH - 1 downto 0);
   signal toggle, dv   : std_ulogic;
 
 begin
@@ -36,7 +42,7 @@ begin
 
   en_icnt <= not spi_cs_i;
 
-  dv      <= '1' when index = 7 else
+  dv      <= '1' when index = DATA_WIDTH - 1 else
         '0';
   dv_o <= dv when rising_edge(spi_clk_i);
 
@@ -48,7 +54,7 @@ begin
   begin
     if (rst_n = '0') then
       toggle <= '0';
-    elsif (rising_edge(spi_clk_i) and index = 7) then
+    elsif (rising_edge(spi_clk_i) and index = DATA_WIDTH - 1) then
       toggle <= not toggle;
     end if;
   end process;
@@ -64,7 +70,7 @@ begin
         index <= (others => '0');
       end if;
       if (en_icnt = '1') then
-        if (index = 7) then
+        if (index = DATA_WIDTH - 1) then
           index <= (others => '0');
         else
           index <= index + 1;
