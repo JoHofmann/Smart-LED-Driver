@@ -20,7 +20,7 @@ Note: Most LED types using GRB color format instead of standard RGB data format 
 
 ![Image not found.](doc/images/WS28xx-data-transfer.png)
 
-For more information see datasheet of your part. See [Useful links](#useful-links) for more information.
+For more information see datasheet of your part. See [Useful links](#useful-links).
 
 ## Usage
 
@@ -36,11 +36,9 @@ For more information see datasheet of your part. See [Useful links](#useful-link
 | serial_out    | A3  | Serial LED signal output    |
 | interrupt_out | B6  | Interrupt output            |
 
-See [pinmap.pcf](synt/pinmap.pcf).
+See [pinmap.pcf](synth/pinmap.pcf).
 
 ### Configuration
-
-The project configuration is done at the beginning of the toplevel module [smart_led_driver_rtl.vhd](src/smart_led_driver_rtl.vhd).
 
 | Constant   | Description                   |
 | ---------- | ----------------------------- |
@@ -51,6 +49,7 @@ The project configuration is done at the beginning of the toplevel module [smart
 | TOTAL_TIME | Time per bit -> mostly 1.25µs |
 | RESET_TIME | Duration of the reset break   |
 
+The project configuration is done at the beginning of the toplevel module [smart_led_driver_rtl.vhd](src/smart_led_driver_rtl.vhd).
 
 ## Simulation
 
@@ -61,7 +60,8 @@ $ gtkwave sim/smart_led_driver.ghw &
 
 ## Synthesis
 
-The project was synthesized for the iCE40LP1K-CM36 FPGA.
+The project was configured for the iCE40LP1K-CM36 FPGA.
+See [Makefile](Makefile).
 
 Synthesize:
 ```console
@@ -80,8 +80,8 @@ $ make show
 
 #### Configuration
 
-LED count = 384 LEDs
-Clock freq. = 12 Mhz
+LED count = 384 LEDs\
+Clock freq. = 12 Mhz\
 Timings for WS2812B LEDs.
 
 #### Device utilisation
@@ -122,10 +122,10 @@ TODO
 
 ## Useful links
 
-iCESugar-nano Github Project 
+iCESugar-nano Github Project\
 https://github.com/wuxx/icesugar-nano
 
-LED WS28xx Overview
+LED WS28xx Overview\
 https://docs.google.com/spreadsheets/d/1XuypEHJ6EJb4g1ueQG16nt9-8UFYQO5HtJiBW11wCBg/edit?usp=sharing
 
 ## TODO
