@@ -36,6 +36,8 @@ For more information see datasheet of your part. See [Useful links](#useful-link
 | serial_out    | A3  | Serial LED signal output    |
 | interrupt_out | B6  | Interrupt output            |
 
+See [pinmap.pcf](synt/pinmap.pcf).
+
 ### Configuration
 
 The project configuration is done at the beginning of the toplevel module [smart_led_driver_rtl.vhd](src/smart_led_driver_rtl.vhd).
@@ -52,16 +54,14 @@ The project configuration is done at the beginning of the toplevel module [smart
 
 ## Simulation
 
-Simulation:
 ```console
 $ make sim
 $ gtkwave sim/smart_led_driver.ghw &
 ```
-TODO
 
 ## Synthesis
 
-The project was synthesized for the iCE40LP1K FPGA.
+The project was synthesized for the iCE40LP1K-CM36 FPGA.
 
 Synthesize:
 ```console
@@ -86,23 +86,23 @@ Timings for WS2812B LEDs.
 
 #### Device utilisation
 ```
-ICESTORM_LC:   271/ 1280    21%
-ICESTORM_RAM:    8/   16    50%
-SB_IO:          14/  112    12%
-SB_GB:           3/    8    37%
-ICESTORM_PLL:    0/    1     0%
-SB_WARMBOOT:     0/    1     0%
+ICESTORM_LC:    226/ 1280    17%
+ICESTORM_RAM:     4/   16    25%
+       SB_IO:     7/  112     6%
+       SB_GB:     3/    8    37%
+ICESTORM_PLL:     0/    1     0%
+SB_WARMBOOT:      0/    1     0%
 ```
 
 #### Timing analysis
 ```
-Max frequency for clock 'spi_clk_in$SB_IO_IN_$glb_clk': 122.17 MHz (PASS at 12.00 MHz)
-Max frequency for clock      'clock$SB_IO_IN_$glb_clk': 104.85 MHz (PASS at 12.00 MHz)
+Max frequency for clock 'spi_clk_in$SB_IO_IN_$glb_clk': 137.44 MHz (PASS at 12.00 MHz)
+Max frequency for clock      'clock$SB_IO_IN_$glb_clk': 118.16 MHz (PASS at 12.00 MHz)
 
-Max delay <async>                              -> posedge clock$SB_IO_IN_$glb_clk     : 5.69 ns
-Max delay <async>                              -> posedge spi_clk_in$SB_IO_IN_$glb_clk: 8.16 ns
-Max delay posedge clock$SB_IO_IN_$glb_clk      -> <async>                             : 8.57 ns
-Max delay posedge spi_clk_in$SB_IO_IN_$glb_clk -> posedge clock$SB_IO_IN_$glb_clk     : 3.29 ns
+Max delay <async>                              -> posedge clock$SB_IO_IN_$glb_clk     : 4.70 ns
+Max delay <async>                              -> posedge spi_clk_in$SB_IO_IN_$glb_clk: 8.13 ns
+Max delay posedge clock$SB_IO_IN_$glb_clk      -> <async>                             : 8.96 ns
+Max delay posedge spi_clk_in$SB_IO_IN_$glb_clk -> posedge clock$SB_IO_IN_$glb_clk     : 3.72 ns
 ```
 
 ## Testing
