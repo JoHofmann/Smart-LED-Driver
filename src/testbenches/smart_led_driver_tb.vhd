@@ -20,8 +20,8 @@ architecture tbench of smart_led_driver_tb is
   end component;
 
   -- constants
-  constant LED_COUNT               : natural := 20;
-  constant N                       : natural := LED_COUNT * 3; --> N = number of bytes e.g. N = LED_count*3
+  constant LED_COUNT               : natural := 384;
+  constant N                       : natural := LED_COUNT * 3;
 
   -- simulation signals
   signal clock, reset              : std_ulogic;

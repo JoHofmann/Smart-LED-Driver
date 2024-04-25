@@ -6,7 +6,7 @@ use ieee.std_logic_1164.all;
 entity smart_led_driver is
   port
   (
-    clock_out     : in  std_ulogic;
+    clock         : in  std_ulogic;
     reset_n       : in  std_ulogic;
     spi_clk_in    : in  std_ulogic;
     spi_mosi_in   : in  std_ulogic;
@@ -159,7 +159,7 @@ begin
   DATA_WIDTH => DATA_WIDTH)
   port map
   (
-    clk_i  => clock_out,
+    clk_i  => clock,
     rst_n  => reset_n,
     d_i    => pwm_data,
     dv_i   => pwm_data_valid,
@@ -177,7 +177,7 @@ begin
   ADDR_WIDTH => ADDR_WIDTH)
   port
   map (
-  clk_i       => clock_out,
+  clk_i       => clock,
   rst_n       => reset_n,
   mem_a_o     => mem_ra,
   mem_d_i     => mem_rd,
@@ -195,7 +195,7 @@ begin
   ADDR_WIDTH => ADDR_WIDTH)
   port
   map (
-  clk_i => clock_out,
+  clk_i => clock,
   wd_i  => mem_wd,
   wa_i  => mem_wa,
   we_i  => mem_we,
@@ -210,7 +210,7 @@ begin
   ADDR_WIDTH => ADDR_WIDTH)
   port
   map(
-  clk_i       => clock_out,
+  clk_i       => clock,
   rst_n       => reset_n,
   mem_a_o     => mem_wa,
   mem_d_o     => mem_wd,
