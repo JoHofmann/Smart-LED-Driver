@@ -24,7 +24,6 @@ end entity;
 architecture rtl of memwriteinterface is
 
   signal index              : unsigned(ADDR_WIDTH - 1 downto 0);
-  signal inactive           : std_ulogic;
 
   -- data valid signals for syncing
   signal dv1, sync_spi_cs_1 : std_ulogic;
@@ -50,21 +49,6 @@ begin
 
   s_dv        <= not dv3 and dv2; -- rising edge detection
 
-  --  sync_new_message : process (clk_i, rst_n)
-  --  begin
-  --    if (rst_n = '0') then
-  --      sync_spi_cs_1 <= '0';
-  --      sync_spi_cs_2 <= '0';
-  --      inactive      <= '0';
-  --    elsif (rising_edge(clk_i)) then
-  --      sync_spi_cs_1 <= spi_cs_i;
-  --      sync_spi_cs_2 <= sync_spi_cs_1;
-  --      inactive      <= sync_spi_cs_2;
-  --    end if;
-  --  end process;
-
-  inactive    <= spi_cs_i;
-
   new_frame_o <= '1' when index >= N - 1
                  and s_dv = '1' else
                  '0';
@@ -79,7 +63,7 @@ begin
     if (rst_n = '0') then
       index <= (others => '0');
     elsif (rising_edge(clk_i)) then
-      if (inactive = '1') then
+      if (spi_cs_i = '1') then
         index <= (others => '0');
       elsif (s_dv = '1') then
         if (index >= N - 1) then
